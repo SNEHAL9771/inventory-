@@ -1,0 +1,157 @@
+// Inventory AI Dashboard with Admin Login
+import React, { useState } from 'react';
+
+function Sidebar() {
+  return (
+    <div className="w-64 bg-white shadow-lg p-6 rounded-r-2xl">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">📦 Inventory AI</h2>
+      <ul className="space-y-4 text-lg">
+        <li className="text-blue-600 hover:underline cursor-pointer">Dashboard</li>
+        <li className="text-blue-600 hover:underline cursor-pointer">Products</li>
+        <li className="text-blue-600 hover:underline cursor-pointer">Warehouses</li>
+        <li className="text-blue-600 hover:underline cursor-pointer">Inventory</li>
+        <li className="text-blue-600 hover:underline cursor-pointer">AI Chatbot</li>
+      </ul>
+    </div>
+  );
+}
+
+function Dashboard() {
+  return (
+    <div className="text-3xl font-bold text-gray-800 mb-6">
+      Welcome to Your Smart Inventory System
+      <p className="text-base text-gray-500 mt-2">Track, manage, and interact with your stock intelligently.</p>
+    </div>
+  );
+}
+
+function Products() {
+  const [products, setProducts] = useState([]);
+  const [name, setName] = useState('');
+  const [quantity, setQuantity] = useState('');
+
+  const addProduct = () => {
+    if (!name || !quantity) return;
+    setProducts([...products, { name, quantity }]);
+    setName('');
+    setQuantity('');
+  };
+
+  return (
+    <div className="mb-10">
+      <h2 className="text-2xl font-semibold mb-4 text-gray-800">🛒 Product Manager</h2>
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <input value={name} onChange={e => setName(e.target.value)} placeholder="Product Name" className="border p-2 rounded w-64" />
+        <input value={quantity} onChange={e => setQuantity(e.target.value)} placeholder="Quantity" className="border p-2 rounded w-32" />
+        <button onClick={addProduct} className="bg-blue-600 text-white px-4 py-2 rounded shadow">Add Product</button>
+      </div>
+      <ul className="bg-white rounded shadow p-4">
+        {products.length === 0 && <li className="text-gray-500">No products added.</li>}
+        {products.map((p, index) => (
+          <li key={index} className="border-b py-2">{p.name} — {p.quantity}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function Warehouses() {
+  return (
+    <div className="mb-10">
+      <h2 className="text-2xl font-semibold mb-4 text-gray-800">🏬 Warehouses</h2>
+      <p className="text-gray-500">Warehouse management features coming soon.</p>
+    </div>
+  );
+}
+
+function Inventory() {
+  return (
+    <div className="mb-10">
+      <h2 className="text-2xl font-semibold mb-4 text-gray-800">📊 Inventory Tracking</h2>
+      <p className="text-gray-500">Real-time inventory updates and analytics will appear here.</p>
+    </div>
+  );
+}
+
+function Chatbot() {
+  const [input, setInput] = useState('');
+  const [response, setResponse] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const askBot = async () => {
+    if (!input) return;
+    setLoading(true);
+    setResponse('');
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: input })
+      });
+      const data = await res.json();
+      setResponse(data.reply || 'No response');
+    } catch (err) {
+      setResponse('Error: Chatbot service unavailable');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="mb-10">
+      <h2 className="text-2xl font-semibold mb-4 text-gray-800">🤖 AI Chatbot Assistant</h2>
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <input value={input} onChange={e => setInput(e.target.value)} placeholder="Ask about inventory, sales..." className="border p-2 rounded w-2/3" />
+        <button onClick={askBot} className="bg-green-600 text-white px-4 py-2 rounded shadow">{loading ? 'Asking...' : 'Ask Bot'}</button>
+      </div>
+      <div className="bg-white p-4 rounded shadow min-h-[80px]">
+        {response ? <p>{response}</p> : <p className="text-gray-400">Bot response will appear here...</p>}
+      </div>
+    </div>
+  );
+}
+
+function LoginPage({ onLogin }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleLogin = () => {
+    if (username === 'admin' && password === 'admin123') {
+      onLogin(true);
+    } else {
+      setError('Invalid credentials');
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">🔐 Admin Login</h2>
+        <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} className="border p-2 rounded w-full mb-3" />
+        <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="border p-2 rounded w-full mb-4" />
+        <button onClick={handleLogin} className="bg-blue-600 text-white w-full py-2 rounded shadow">Login</button>
+        {error && <p className="text-red-500 mt-3 text-center">{error}</p>}
+      </div>
+    </div>
+  );
+}
+
+export default function App() {
+  const [loggedIn, setLoggedIn] = useState(false);
+  if (!loggedIn) return <LoginPage onLogin={setLoggedIn} />;
+
+  return (
+    <div className="flex min-h-screen bg-gray-100 font-sans">
+      <Sidebar />
+      <div className="flex-1 p-8 space-y-12">
+        <Dashboard />
+        <Products />
+        <Warehouses />
+        <Inventory />
+        <Chatbot />
+      </div>
+    </div>
+  );
+}
